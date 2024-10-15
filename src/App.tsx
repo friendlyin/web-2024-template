@@ -71,7 +71,7 @@ const BlinkingText = styled(Typography)`
   animation: blink 1s linear infinite;
   color: #ff0000;
   text-shadow: 2px 2px #ffff00;
-`;
+` as typeof Typography;  // Add this type assertion
 
 function App() {
   const [reviews, setReviews] = useLocalStorageState<MovieReview[]>("movieReviews", {
