@@ -10,162 +10,205 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   IconButton,
-  Checkbox,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 
-interface Todo {
+interface MovieReview {
   id: number;
-  text: string;
-  done: boolean;
+  title: string;
+  review: string;
 }
 
 const AppContainer = styled.div`
-  max-width: 600px;
+  max-width: 800px;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+  font-family: "Comic Sans MS", cursive;
+  background-color: #ffff99;
+  border: 3px solid #ff00ff;
+  box-shadow: 5px 5px 0px #00ffff;
 `;
 
 const StyledButton = styled(Button)`
   && {
     margin-top: 1rem;
+    background-color: #ff00ff;
+    color: #ffff00;
+    font-weight: bold;
+    border: 2px solid #00ffff;
+    &:hover {
+      background-color: #00ffff;
+      color: #ff00ff;
+    }
   }
 `;
 
-const StyledListItemText = styled(ListItemText)<{ done: boolean }>`
+const StyledListItem = styled(ListItem)`
   && {
-    text-decoration: ${(props) => (props.done ? "line-through" : "none")};
+    background-color: #ffffff;
+    border: 2px dashed #ff00ff;
+    margin-bottom: 1rem;
   }
+`;
+
+const StyledTextField = styled(TextField)`
+  && {
+    margin-bottom: 1rem;
+    .MuiInputBase-root {
+      background-color: #ffffff;
+    }
+  }
+`;
+
+const BlinkingText = styled(Typography)`
+  @keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  animation: blink 1s linear infinite;
+  color: #ff0000;
+  text-shadow: 2px 2px #ffff00;
 `;
 
 function App() {
-  const [todos, setTodos] = useLocalStorageState<Todo[]>("todos", {
+  const [reviews, setReviews] = useLocalStorageState<MovieReview[]>("movieReviews", {
     defaultValue: [],
   });
-  const [newTodo, setNewTodo] = useState("");
+  const [newTitle, setNewTitle] = useState("");
+  const [newReview, setNewReview] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [editText, setEditText] = useState(""); // Add this line
+  const [editTitle, setEditTitle] = useState("");
+  const [editReview, setEditReview] = useState("");
 
   useEffect(() => {
-    if (todos.length === 0) {
-      const boilerplateTodos = [
-        { id: 1, text: "Install Node.js", done: false },
-        { id: 2, text: "Install Cursor IDE", done: false },
-        { id: 3, text: "Log into Github", done: false },
-        { id: 4, text: "Fork a repo", done: false },
-        { id: 5, text: "Make changes", done: false },
-        { id: 6, text: "Commit", done: false },
-        { id: 7, text: "Deploy", done: false },
+    if (reviews.length === 0) {
+      const exampleReviews = [
+        { id: 1, title: "Jurassic Park", review: "Dinos are totally rad! Two thumbs up!" },
+        { id: 2, title: "The Matrix", review: "Whoa, mind-bending stuff. Cool effects!" },
+        { id: 3, title: "Titanic", review: "Epic love story. Bring tissues!" },
       ];
-      setTodos(boilerplateTodos);
+      setReviews(exampleReviews);
     }
-  }, [todos, setTodos]);
+  }, [reviews, setReviews]);
 
-  const handleAddTodo = () => {
-    if (newTodo.trim() !== "") {
-      setTodos([
-        ...todos,
-        { id: Date.now(), text: newTodo.trim(), done: false },
+  const handleAddReview = () => {
+    if (newTitle.trim() !== "" && newReview.trim() !== "") {
+      setReviews([
+        ...reviews,
+        { id: Date.now(), title: newTitle.trim(), review: newReview.trim() },
       ]);
-      setNewTodo("");
+      setNewTitle("");
+      setNewReview("");
     }
   };
 
-  const handleDeleteTodo = (id: number) => {
-    setTodos(todos.filter((todo) => todo.id !== id));
+  const handleDeleteReview = (id: number) => {
+    setReviews(reviews.filter((review) => review.id !== id));
   };
 
-  const handleToggleTodo = (id: number) => {
-    setTodos(
-      todos.map((todo) =>
-        todo.id === id ? { ...todo, done: !todo.done } : todo
-      )
-    );
-  };
-
-  const handleEditTodo = (id: number) => {
+  const handleEditReview = (id: number) => {
     setEditingId(id);
-    const todoToEdit = todos.find((todo) => todo.id === id);
-    if (todoToEdit) {
-      setEditText(todoToEdit.text);
+    const reviewToEdit = reviews.find((review) => review.id === id);
+    if (reviewToEdit) {
+      setEditTitle(reviewToEdit.title);
+      setEditReview(reviewToEdit.review);
     }
   };
 
-  const handleUpdateTodo = (id: number) => {
-    if (editText.trim() !== "") {
-      setTodos(
-        todos.map((todo) =>
-          todo.id === id ? { ...todo, text: editText.trim() } : todo
+  const handleUpdateReview = (id: number) => {
+    if (editTitle.trim() !== "" && editReview.trim() !== "") {
+      setReviews(
+        reviews.map((review) =>
+          review.id === id
+            ? { ...review, title: editTitle.trim(), review: editReview.trim() }
+            : review
         )
       );
     }
     setEditingId(null);
-    setEditText("");
+    setEditTitle("");
+    setEditReview("");
   };
 
   return (
     <AppContainer>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Todo List
-      </Typography>
-      <TextField
+      <BlinkingText variant="h3" component="h1" gutterBottom>
+        Totally Awesome Movie Reviews!
+      </BlinkingText>
+      <StyledTextField
         fullWidth
         variant="outlined"
-        label="New Todo"
-        value={newTodo}
-        onChange={(e) => setNewTodo(e.target.value)}
-        onKeyPress={(e) => e.key === "Enter" && handleAddTodo()}
-        autoFocus // Add this line to enable autofocus
+        label="Movie Title"
+        value={newTitle}
+        onChange={(e) => setNewTitle(e.target.value)}
+      />
+      <StyledTextField
+        fullWidth
+        variant="outlined"
+        label="Your Review"
+        multiline
+        rows={3}
+        value={newReview}
+        onChange={(e) => setNewReview(e.target.value)}
       />
       <StyledButton
         variant="contained"
-        color="primary"
         fullWidth
-        onClick={handleAddTodo}
+        onClick={handleAddReview}
       >
-        Add Todo
+        Add Review
       </StyledButton>
       <List>
-        {todos.map((todo) => (
-          <ListItem key={todo.id} dense>
-            <Checkbox
-              edge="start"
-              checked={todo.done}
-              onChange={() => handleToggleTodo(todo.id)}
-            />
-            {editingId === todo.id ? (
-              <TextField
-                fullWidth
-                value={editText}
-                onChange={(e) => setEditText(e.target.value)}
-                onBlur={() => handleUpdateTodo(todo.id)}
-                onKeyPress={(e) =>
-                  e.key === "Enter" && handleUpdateTodo(todo.id)
-                }
-                autoFocus
-              />
+        {reviews.map((review) => (
+          <StyledListItem key={review.id}>
+            {editingId === review.id ? (
+              <>
+                <StyledTextField
+                  fullWidth
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  label="Movie Title"
+                />
+                <StyledTextField
+                  fullWidth
+                  value={editReview}
+                  onChange={(e) => setEditReview(e.target.value)}
+                  multiline
+                  rows={3}
+                  label="Your Review"
+                />
+                <StyledButton onClick={() => handleUpdateReview(review.id)}>
+                  Save
+                </StyledButton>
+              </>
             ) : (
-              <StyledListItemText primary={todo.text} done={todo.done} />
+              <>
+                <ListItemText
+                  primary={<Typography variant="h6">{review.title}</Typography>}
+                  secondary={review.review}
+                />
+                <ListItemSecondaryAction>
+                  <IconButton
+                    edge="end"
+                    aria-label="edit"
+                    onClick={() => handleEditReview(review.id)}
+                  >
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton
+                    edge="end"
+                    aria-label="delete"
+                    onClick={() => handleDeleteReview(review.id)}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </ListItemSecondaryAction>
+              </>
             )}
-            <ListItemSecondaryAction>
-              <IconButton
-                edge="end"
-                aria-label="edit"
-                onClick={() => handleEditTodo(todo.id)}
-              >
-                <EditIcon />
-              </IconButton>
-              <IconButton
-                edge="end"
-                aria-label="delete"
-                onClick={() => handleDeleteTodo(todo.id)}
-              >
-                <DeleteIcon />
-              </IconButton>
-            </ListItemSecondaryAction>
-          </ListItem>
+          </StyledListItem>
         ))}
       </List>
     </AppContainer>
